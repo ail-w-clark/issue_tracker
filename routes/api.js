@@ -37,12 +37,28 @@ const addNewIssue = (req, res) => {
 };
 
 const getIssues = async (req, res) => {
-  const projectName = req.params.project || 'apitest';
-  const issues = await Issue.find({ project_name: projectName });
+  const projectName = req.params.project; 
+  const query = { project_name: projectName }; 
+  const issues = await Issue.find(query);
+
   if (issues.length === 0) {
-    return res.json([]);  // If no issues, return an empty array
+    return res.json([]);
   }
-  res.json(issues);
+
+  if (Object.keys(req.query).length > 0) {
+    const filteredIssues = issues.filter(issue => {
+      return Object.entries(req.query).every(([key, value]) => {
+        if (issue[key] && value) {
+          return String(issue[key]).toLowerCase() === String(value).toLowerCase();
+        }
+        return true; 
+      });
+    });
+
+    return res.json(filteredIssues.length > 0 ? filteredIssues : []);
+  }
+
+  return res.json(issues);
 };
 
 module.exports = (app) => {

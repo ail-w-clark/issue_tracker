@@ -61,17 +61,27 @@ const getIssues = async (req, res) => {
   return res.json(issues);
 };
 
+const updateIssue = async (req, res) => {
+  const updateData = Object.fromEntries(
+    Object.entries(req.body).filter(([key, value]) => value !== "")
+  );
+
+  updateData.updated_on = new Date().toISOString();
+
+  const issue = await Issue.findByIdAndUpdate(
+    req.body._id,   
+    updateData,    
+    { new: true }    
+  );
+
+  res.json({ result: 'successfully updated', _id: req.body._id });
+};
+
 module.exports = (app) => {
   app.route('/api/issues/:project')
-    .get((req, res, next) => {
-      let project = req.params.project;
-      getIssues(req, res);
-    })
+    .get(getIssues)
     .post(addNewIssue)  
-    .put((req, res) => {
-      let project = req.params.project;
-      res.send('PUT request successful');
-    })
+    .put(updateIssue)
     .delete((req, res) => {
       let project = req.params.project;
       res.send('DELETE request successful');

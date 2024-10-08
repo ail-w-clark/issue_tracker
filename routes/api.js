@@ -62,19 +62,41 @@ const getIssues = async (req, res) => {
 };
 
 const updateIssue = async (req, res) => {
-  const updateData = Object.fromEntries(
-    Object.entries(req.body).filter(([key, value]) => value !== "")
-  );
+  try {
+    if (!req.body._id) {
+      return res.json({ error: 'missing _id', _id: req.body._id });
+    }
 
-  updateData.updated_on = new Date().toISOString();
+    const updateFields = ['issue_title', 'issue_text', 'created_by', 'assigned_to', 'status_text'];
 
-  const issue = await Issue.findByIdAndUpdate(
-    req.body._id,   
-    updateData,    
-    { new: true }    
-  );
+    const hasUpdateField = updateFields.some(field => req.body[field]);
 
-  res.json({ result: 'successfully updated', _id: req.body._id });
+    if (!hasUpdateField) {
+      return res.json({ error: 'no update field(s) sent', _id: req.body._id });
+    }
+
+    const updateData = Object.fromEntries(
+      Object.entries(req.body).filter(([key, value]) => value !== "")
+    );
+
+    updateData.updated_on = new Date().toISOString();
+
+    const issue = await Issue.findByIdAndUpdate(
+      req.body._id,
+      updateData,
+      { new: true } 
+    );
+
+    if (!issue) {
+      return res.json({ error: 'could not update', _id: req.body._id });
+    }
+
+    res.json({ result: 'successfully updated', _id: req.body._id });
+
+  } catch (err) {
+    console.error(err); 
+    return res.json({ error: 'could not update', _id: req.body._id });
+  }
 };
 
 module.exports = (app) => {

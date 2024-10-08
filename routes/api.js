@@ -99,15 +99,31 @@ const updateIssue = async (req, res) => {
   }
 };
 
+const deleteIssue = async (req, res) => {
+  try {
+    if (!req.body._id) {
+      return res.json({ error: 'missing _id' });
+    }
+
+    const issue = await Issue.findByIdAndDelete(req.body._id);
+
+    if (!issue) {
+      return res.json({ error: 'could not delete', _id: req.body._id });
+    }
+
+    res.json({ result: 'successfully deleted', _id: req.body._id });
+  } catch (err) {
+    return res.json({ error: 'could not delete', _id: req.body._id });
+  }
+};
+
+
 module.exports = (app) => {
   app.route('/api/issues/:project')
     .get(getIssues)
     .post(addNewIssue)  
     .put(updateIssue)
-    .delete((req, res) => {
-      let project = req.params.project;
-      res.send('DELETE request successful');
-    });
+    .delete(deleteIssue);
 
     app.route('/:project?')
       .post(addNewIssue);

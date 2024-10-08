@@ -64,7 +64,7 @@ const getIssues = async (req, res) => {
 const updateIssue = async (req, res) => {
   try {
     if (!req.body._id) {
-      return res.json({ error: 'missing _id', _id: req.body._id });
+      return res.json({ error: 'missing _id' });
     }
 
     const updateFields = ['issue_title', 'issue_text', 'created_by', 'assigned_to', 'status_text'];
